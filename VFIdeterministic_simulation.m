@@ -1,13 +1,33 @@
 close all
 clear all
 %%%% Set up parameters
-t=cputime
 alpha = 0.35;
 beta = 0.99;
 delta = 0.025;
 sigma = 2;
 T_mat = [0.977, 1-0.977; 1 - 0.926, 0.926];
-A = [1.1, 0.678];
+A = [1.0082, 0.9736];
+
+A_simulation_1=zeros(1,1000);
+
+A_simulation_1(1,1)=1;
+
+for i=2:1000
+    ran=unifrnd(0,1);
+    if A_simulation_1(1,i-1)==1
+        if ran<=T_mat(1,1)
+            A_simulation_1(1,i)=1;
+        else
+            A_simulation_1(1,i)=0;
+        end
+    else
+        if ran<=T_mat(2,1)
+            A_simulation_1(1,i)=1;
+        else
+            A_simulation_1(1,i)=0;
+        end
+    end
+end
 
 %%%% Set up discretized state space
 k_min = 0;
@@ -81,9 +101,28 @@ xlabel('k')
 ylabel('saving')
 legend('Ah','Al')
 
-e=cputime-t
+A_simulation=zeros(1,1000);
+A_simulation(A_simulation_1==1)=A(1);
+A_simulation(A_simulation_1==0)=A(2);
 
 
+
+k_simulation=zeros(1,1000);
+k_simulation(1,1)=35;
+ik_simulation=zeros(1,1);
+for i=2:1000
+    if A_simulation(1,i-1)==A(1);
+        ik_simulation=find(k==k_simulation(1,i-1));
+        k_simulation(1,i)=g(1,ik_simulation);
+    else
+        ik_simulation=find(k==k_simulation(1,i-1));
+        k_simulation(1,i)=g(2,ik_simulation);
+    end
+end
+
+y=A_simulation.*(k_simulation.^alpha);
+
+std(y)/mean(y)
 
 
 
